@@ -16,19 +16,38 @@ import { startScheduler } from "./services/scheduler.js";
 const logger = createLogger("server");
 const app = new Hono();
 
-// ── CORS (allow frontend) ─────────────────────────────────────────────────
-app.use("*", cors({
-  origin: [
+const CORS_ALLOWED_ORIGINS = (() => {
+  const defaults = [
     "https://oishiapp.vercel.app",
     "http://localhost:3000",
     "http://localhost:5173",
-  ],
-  credentials: true,
-  allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowHeaders: ["Content-Type", "Authorization", "x-oishi-wallet", "x-oishi-signature", "x-oishi-message"],
-  exposeHeaders: [],
-  maxAge: 86400,
-}));
+  ];
+  const extra =
+    process.env.OISHI_CORS_ORIGINS?.split(",")
+      .map((s) => s.trim().replace(/\/+$/, ""))
+      .filter(Boolean) ?? [];
+  return [...defaults, ...extra];
+})();
+
+// ── CORS — echo Origin only when allowlisted (omit header otherwise; required when credentials: true)
+app.use(
+  "*",
+  cors({
+    origin: (origin) =>
+      !origin ? null : CORS_ALLOWED_ORIGINS.includes(origin) ? origin : null,
+    credentials: true,
+    allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowHeaders: [
+      "Content-Type",
+      "Authorization",
+      "x-oishi-wallet",
+      "x-oishi-signature",
+      "x-oishi-message",
+    ],
+    exposeHeaders: [],
+    maxAge: 86400,
+  }),
+);
 
 // ── Routes ──────────────────────────────────────────────────────────────────
 app.route("/api/health", healthRouter);
@@ -48,9 +67,9 @@ app.get("/api/debug/llm", async (c) => {
 const PORT = parseInt(process.env.PORT ?? "3000");
 const isProduction = process.env.RAILWAY_ENVIRONMENT !== undefined;
 
-// Load agents on startup
-loadFromSupabase().then((agents) => {
-  logger.info(`Loaded ${agents.length} agents from Supabase`);
+// Load agents on startup (populate memory; detailed log is in agent-store)
+loadFromSupabase().then((loaded) => {
+  logger.info(`Agent store ready with ${loaded.length} agent(s)`);
 });
 
 // Start scheduler in production

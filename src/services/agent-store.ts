@@ -59,6 +59,10 @@ function rowToAgent(row: Record<string, unknown>): Agent {
     totalEarnings: row.total_earnings as number,
     totalTxCount: row.total_tx_count as number,
     cycleCount: row.cycle_count as number,
+    walletPublicKey:
+      typeof row.wallet_public_key === "string" && row.wallet_public_key.length > 0
+        ? row.wallet_public_key
+        : "",
     createdAt: new Date(row.created_at as string).getTime(),
     updatedAt: new Date(row.updated_at as string).getTime(),
     lastActiveAt: row.last_active_at ? new Date(row.last_active_at as string).getTime() : null,
@@ -182,14 +186,21 @@ export function updateAgentState(
 }
 
 // ── Load all agents from Supabase into memory on startup ───────────────
-export async function loadFromSupabase(): Promise<void> {
-  if (!isSupabaseReady() || !supabase) return;
+export async function loadFromSupabase(): Promise<Agent[]> {
+  if (!isSupabaseReady() || !supabase) {
+    return getAllAgents();
+  }
   const { data, error } = await supabase.from("agents").select("*");
-  if (error) { log.error("Failed to load agents from Supabase", { error: error.message }); return; }
-  for (const row of data) {
-    agents.set(row.id, rowToAgent(row));
+  if (error) {
+    log.error("Failed to load agents from Supabase", { error: error.message });
+    return getAllAgents();
+  }
+  const rows = data ?? [];
+  for (const row of rows) {
+    agents.set(row.id as string, rowToAgent(row as Record<string, unknown>));
   }
   log.info(`Loaded ${agents.size} agents from Supabase`);
+  return getAllAgents();
 }
 
 export function persistAll() {
