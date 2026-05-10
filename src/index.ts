@@ -1,4 +1,4 @@
-import "./lib/env";
+import "./lib/env.js";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
@@ -53,16 +53,21 @@ app.get("/", (c) =>
   }),
 );
 
-// ── Start ──────────────────────────────────────────────────────────────
-const port = parseInt(process.env.PORT ?? "3001", 10);
-
-serve({ fetch: app.fetch, port }, (info) => {
-  logger.info(`Oishi Agent Backend running on http://localhost:${info.port}`);
-  logger.info(`LLM: ${getLlmDebugInfo()}`);
-
-  // Load agents from Supabase (if configured) then start scheduler
-  loadFromSupabase().then(() => {
-    startScheduler();
-  });
-  logger.info(`Scheduler: waking active agents every ${parseInt(process.env.AGENT_CYCLE_MS ?? "60000", 10) / 1000}s`);
+// Load agents from Supabase (if configured) then start scheduler — runs on Vercel cold start too
+void loadFromSupabase().then(() => {
+  startScheduler();
 });
+
+// Vercel runs Hono via `export default` (serverless). Local / Docker use Node server.
+export default app;
+
+if (!process.env.VERCEL) {
+  const port = parseInt(process.env.PORT ?? "3001", 10);
+  serve({ fetch: app.fetch, port }, (info) => {
+    logger.info(`Oishi Agent Backend running on http://localhost:${info.port}`);
+    logger.info(`LLM: ${getLlmDebugInfo()}`);
+    logger.info(
+      `Scheduler: waking active agents every ${parseInt(process.env.AGENT_CYCLE_MS ?? "60000", 10) / 1000}s`,
+    );
+  });
+}

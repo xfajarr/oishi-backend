@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import "./env"; // ensure .env loaded first
+import "./env.js"; // ensure .env loaded first
 
 const url = process.env.SUPABASE_URL;
 const key = process.env.SUPABASE_SERVICE_KEY;
