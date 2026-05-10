@@ -129,6 +129,35 @@ agentsRouter.post("/:id/resume", requireAuth(), (c) => {
   return c.json({ agent: updated });
 });
 
+// ── Get agent wallet balance ─────────────────────────────────────────
+agentsRouter.get("/:id/balance", requireAuth(), async (c) => {
+  const wallet = (c as Record<string, unknown>).wallet as string;
+  const id = c.req.param("id");
+  const agent = getAgent(id);
+
+  if (!agent) return c.json({ error: "Agent not found" }, 404);
+  if (agent.owner !== wallet) return c.json({ error: "Not your agent" }, 403);
+
+  try {
+    const rpc = process.env.SOLANA_RPC_URL ?? "https://api.devnet.solana.com";
+    const connection = new Connection(rpc, "confirmed");
+    const pubkey = new PublicKey(agent.walletPublicKey);
+
+    const solBalance = await connection.getBalance(pubkey);
+    const sol = solBalance / 1e9;
+
+    return c.json({
+      agentId: id,
+      wallet: agent.walletPublicKey,
+      sol,
+      solUsd: sol * 130, // approximate
+      explorerUrl: `https://explorer.solana.com/address/${agent.walletPublicKey}?cluster=devnet`,
+    });
+  } catch (err) {
+    return c.json({ error: `Failed to fetch balance: ${String(err)}` }, 500);
+  }
+});
+
 // ── Withdraw / stop agent ──────────────────────────────────────────────
 agentsRouter.delete("/:id", requireAuth(), (c) => {
   const wallet = c.get("wallet");

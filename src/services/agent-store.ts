@@ -3,6 +3,7 @@
  * Interface is identical regardless of backend.
  */
 import { v4 as uuid } from "uuid";
+import { Keypair } from "@solana/web3.js";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { supabase, isSupabaseReady } from "../lib/supabase.js";
@@ -93,6 +94,10 @@ export function createAgent(
   const now = Date.now();
   const specificDefaults = DEFAULT_SPECIFIC[input.strategyId] ?? {};
 
+  // Generate agent's own Solana wallet
+  const walletKeypair = Keypair.generate();
+  const walletPublicKey = walletKeypair.publicKey.toBase58();
+
   const agent: Agent = {
     id, owner, handle: input.handle, displayName: input.displayName,
     strategyId: input.strategyId,
@@ -100,8 +105,10 @@ export function createAgent(
     specificRules: { ...specificDefaults, ...input.specificRules },
     status: "active", kyaIdentityPda, kyaReputationScore: 0, attestationCount: 0,
     totalEarnings: 0, totalTxCount: 0, cycleCount: 0,
+    walletPublicKey,
     createdAt: now, updatedAt: now, lastActiveAt: null,
   };
+  log.info(`Agent wallet created: ${walletPublicKey.slice(0, 8)}...`);
 
   if (isSupabaseReady() && supabase) {
     supabase.from("agents").insert({ id, ...agentToRow(agent), created_at: new Date(now).toISOString(), updated_at: new Date(now).toISOString() }).then(() => {});

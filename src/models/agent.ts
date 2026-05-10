@@ -75,6 +75,7 @@ export interface Agent {
   totalEarnings: number;
   totalTxCount: number;
   cycleCount: number;
+  walletPublicKey: string;       // Agent's own Solana wallet (base58 pubkey)
   createdAt: number;
   updatedAt: number;
   lastActiveAt: number | null;
