@@ -21,6 +21,7 @@ const CORS_ALLOWED_ORIGINS = (() => {
     "https://oishiapp.vercel.app",
     "http://localhost:3000",
     "http://localhost:5173",
+    "http://localhost:8080",
   ];
   const extra =
     process.env.OISHI_CORS_ORIGINS?.split(",")
