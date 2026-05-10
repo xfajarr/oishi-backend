@@ -3,12 +3,12 @@ import { serve } from "@hono/node-server";
 // Local dev: Bun auto-serves the default export. Only use manual serve for non-Bun runtimes.
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { agentsRouter } from "./routes/agents";
-import { agentRunRouter } from "./routes/agent-run";
-import { healthRouter } from "./routes/health";
-import { lifiRouter } from "./routes/lifi";
-import { authRouter } from "./routes/auth";
-import { onchainRouter } from "./routes/onchain";
+import { agentsRouter } from "./routes/agents.js";
+import { agentRunRouter } from "./routes/agent-run.js";
+import { healthRouter } from "./routes/health.js";
+import { lifiRouter } from "./routes/lifi.js";
+import { authRouter } from "./routes/auth.js";
+import { onchainRouter } from "./routes/onchain.js";
 import { createLogger } from "./lib/logger";
 import { getLlmDebugInfo } from "./llm/client";
 import { loadFromSupabase } from "./services/agent-store";
