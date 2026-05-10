@@ -18,14 +18,23 @@
     "jose": "^6.2.3",
     "openai": "^6.37.0",
     "tweetnacl": "^1.0.3",
-    "uuid": "^14.0.0",
+    "uuid": "^9.0.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",
-    "@types/uuid": "^11.0.0",
     "esbuild": "^0.25.0",
     "tsx": "^4.7.1",
     "typescript": "^5.8.3"
+  },
+  "overrides": {
+    "rpc-websockets": {
+      "uuid": "^9.0.1"
+    }
+  },
+  "pnpm": {
+    "overrides": {
+      "uuid": "9.0.1"
+    }
   }
 }
