@@ -14,6 +14,7 @@ node_modules/
 # build output (esbuild → dist/)
 dist/
 build/
+api/_bundle.mjs
 
 # env
 .env

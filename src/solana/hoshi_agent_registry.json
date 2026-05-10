@@ -1,0 +1,741 @@
+{
+  "address": "EdsJZDNVQ2ncXrXaTFd2aZFhrYqLBJGJBq6xAY26PR9a",
+  "metadata": {
+    "name": "hoshi_agent_registry",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Oishi Agent Registry — on-chain agent profiles"
+  },
+  "instructions": [
+    {
+      "name": "add_strategy",
+      "docs": [
+        "Add a strategy to the agent's active set."
+      ],
+      "discriminator": [
+        64,
+        123,
+        127,
+        227,
+        192,
+        234,
+        198,
+        20
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "agent"
+          ]
+        },
+        {
+          "name": "agent",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  103,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "agent.handle",
+                "account": "AgentAccount"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "strategy",
+          "type": {
+            "defined": {
+              "name": "StrategyId"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "link_kya_identity",
+      "docs": [
+        "Link agent to a KYA identity PDA."
+      ],
+      "discriminator": [
+        204,
+        84,
+        59,
+        193,
+        165,
+        122,
+        222,
+        34
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "agent"
+          ]
+        },
+        {
+          "name": "agent",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  103,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "agent.handle",
+                "account": "AgentAccount"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "kya_identity",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "register_agent",
+      "docs": [
+        "Register a new agent with one or more strategies (bitmask)."
+      ],
+      "discriminator": [
+        135,
+        157,
+        66,
+        195,
+        2,
+        113,
+        175,
+        30
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "agent",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  103,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "handle"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "handle",
+          "type": "string"
+        },
+        {
+          "name": "display_name",
+          "type": "string"
+        },
+        {
+          "name": "strategy_mask",
+          "type": "u16"
+        },
+        {
+          "name": "rules_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "remove_strategy",
+      "docs": [
+        "Remove a strategy from the agent's active set."
+      ],
+      "discriminator": [
+        185,
+        238,
+        33,
+        91,
+        134,
+        210,
+        97,
+        26
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "agent"
+          ]
+        },
+        {
+          "name": "agent",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  103,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "agent.handle",
+                "account": "AgentAccount"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "strategy",
+          "type": {
+            "defined": {
+              "name": "StrategyId"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "set_agent_status",
+      "docs": [
+        "Set agent status (pause / resume / stop)."
+      ],
+      "discriminator": [
+        31,
+        193,
+        64,
+        189,
+        114,
+        155,
+        164,
+        218
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "agent"
+          ]
+        },
+        {
+          "name": "agent",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  103,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "agent.handle",
+                "account": "AgentAccount"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "status",
+          "type": {
+            "defined": {
+              "name": "AgentStatus"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "transfer_ownership",
+      "docs": [
+        "Transfer agent ownership to a new wallet."
+      ],
+      "discriminator": [
+        65,
+        177,
+        215,
+        73,
+        53,
+        45,
+        99,
+        47
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "agent"
+          ]
+        },
+        {
+          "name": "agent",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  103,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "agent.handle",
+                "account": "AgentAccount"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "new_owner",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "update_agent",
+      "docs": [
+        "Update agent metadata (display name, rules hash, metadata URI)."
+      ],
+      "discriminator": [
+        85,
+        2,
+        178,
+        9,
+        119,
+        139,
+        102,
+        164
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "agent"
+          ]
+        },
+        {
+          "name": "agent",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  103,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "agent.handle",
+                "account": "AgentAccount"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "display_name",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "rules_hash",
+          "type": {
+            "option": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        },
+        {
+          "name": "metadata_uri",
+          "type": {
+            "option": "string"
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "AgentAccount",
+      "discriminator": [
+        241,
+        119,
+        69,
+        140,
+        233,
+        9,
+        112,
+        50
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "AgentRegistered",
+      "discriminator": [
+        191,
+        78,
+        217,
+        54,
+        232,
+        100,
+        189,
+        85
+      ]
+    },
+    {
+      "name": "AgentStatusChanged",
+      "discriminator": [
+        210,
+        74,
+        73,
+        158,
+        205,
+        28,
+        137,
+        178
+      ]
+    },
+    {
+      "name": "OwnershipTransferred",
+      "discriminator": [
+        172,
+        61,
+        205,
+        183,
+        250,
+        50,
+        38,
+        98
+      ]
+    },
+    {
+      "name": "StrategiesUpdated",
+      "discriminator": [
+        46,
+        137,
+        231,
+        167,
+        169,
+        136,
+        234,
+        233
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "HandleTaken",
+      "msg": "Handle already registered"
+    },
+    {
+      "code": 6001,
+      "name": "NotOwner",
+      "msg": "Not the agent owner"
+    },
+    {
+      "code": 6002,
+      "name": "HandleTooLong",
+      "msg": "Handle too long — max 64 characters"
+    },
+    {
+      "code": 6003,
+      "name": "NoStrategySelected",
+      "msg": "At least one strategy must be selected"
+    },
+    {
+      "code": 6004,
+      "name": "CannotRemoveLastStrategy",
+      "msg": "Cannot remove the last strategy from an agent"
+    }
+  ],
+  "types": [
+    {
+      "name": "AgentAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "handle",
+            "type": "string"
+          },
+          {
+            "name": "display_name",
+            "type": "string"
+          },
+          {
+            "name": "strategy_mask",
+            "type": "u16"
+          },
+          {
+            "name": "rules_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "AgentStatus"
+              }
+            }
+          },
+          {
+            "name": "kya_identity",
+            "type": "pubkey"
+          },
+          {
+            "name": "metadata_uri",
+            "type": "string"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "updated_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AgentRegistered",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "handle",
+            "type": "string"
+          },
+          {
+            "name": "strategy_mask",
+            "type": "u16"
+          },
+          {
+            "name": "strategy_count",
+            "type": "u8"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AgentStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Paused"
+          },
+          {
+            "name": "Stopped"
+          },
+          {
+            "name": "Blocked"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AgentStatusChanged",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "handle",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "type": "u8"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OwnershipTransferred",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "handle",
+            "type": "string"
+          },
+          {
+            "name": "old_owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "new_owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "StrategiesUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "handle",
+            "type": "string"
+          },
+          {
+            "name": "strategy_mask",
+            "type": "u16"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "StrategyId",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Polymarket"
+          },
+          {
+            "name": "Meteora"
+          },
+          {
+            "name": "Kamino"
+          },
+          {
+            "name": "Sanctum"
+          },
+          {
+            "name": "Drift"
+          },
+          {
+            "name": "Jupiter"
+          },
+          {
+            "name": "Raydium"
+          },
+          {
+            "name": "Marginfi"
+          }
+        ]
+      }
+    }
+  ]
+}

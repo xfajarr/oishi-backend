@@ -1,0 +1,395 @@
+{
+  "address": "7QaaaMxxPavk8KRZwS5WwbPzPmRkXPtjFmfxh2M8ev1Z",
+  "metadata": {
+    "name": "hoshi_kya",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Hoshi KYA onchain registry"
+  },
+  "instructions": [
+    {
+      "name": "claim_handle",
+      "discriminator": [
+        93,
+        142,
+        47,
+        111,
+        164,
+        134,
+        99,
+        181
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "identity",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  105,
+                  100,
+                  101,
+                  110,
+                  116,
+                  105,
+                  116,
+                  121
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "handle"
+              }
+            ]
+          }
+        },
+        {
+          "name": "wallet_index",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  119,
+                  97,
+                  108,
+                  108,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "handle",
+          "type": "string"
+        },
+        {
+          "name": "display_name",
+          "type": "string"
+        },
+        {
+          "name": "metadata_uri",
+          "type": {
+            "option": "string"
+          }
+        }
+      ]
+    },
+    {
+      "name": "initialize_registry",
+      "discriminator": [
+        189,
+        181,
+        20,
+        17,
+        174,
+        57,
+        249,
+        59
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "registry_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "hoshi_issuer",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "resolve_handle",
+      "discriminator": [
+        191,
+        49,
+        99,
+        36,
+        220,
+        94,
+        210,
+        1
+      ],
+      "accounts": [
+        {
+          "name": "identity"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "update_reputation",
+      "discriminator": [
+        194,
+        220,
+        43,
+        201,
+        54,
+        209,
+        49,
+        178
+      ],
+      "accounts": [
+        {
+          "name": "registry_config"
+        },
+        {
+          "name": "hoshi_signer",
+          "signer": true
+        },
+        {
+          "name": "identity",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  105,
+                  100,
+                  101,
+                  110,
+                  116,
+                  105,
+                  116,
+                  121
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "handle"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "handle",
+          "type": "string"
+        },
+        {
+          "name": "delta",
+          "type": "i64"
+        },
+        {
+          "name": "_reason",
+          "type": "string"
+        },
+        {
+          "name": "_reference",
+          "type": {
+            "option": "string"
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "IdentityAccount",
+      "discriminator": [
+        194,
+        90,
+        181,
+        160,
+        182,
+        206,
+        116,
+        158
+      ]
+    },
+    {
+      "name": "RegistryConfig",
+      "discriminator": [
+        23,
+        118,
+        10,
+        246,
+        173,
+        231,
+        243,
+        156
+      ]
+    },
+    {
+      "name": "WalletIndex",
+      "discriminator": [
+        175,
+        97,
+        65,
+        11,
+        123,
+        121,
+        12,
+        83
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "HandleTaken",
+      "msg": "Handle already exists"
+    },
+    {
+      "code": 6001,
+      "name": "WalletAlreadyHasHandle",
+      "msg": "Wallet already owns a Hoshi handle"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidHandle",
+      "msg": "Invalid Hoshi handle"
+    },
+    {
+      "code": 6003,
+      "name": "UnauthorizedIssuer",
+      "msg": "Unauthorized issuer"
+    }
+  ],
+  "types": [
+    {
+      "name": "IdentityAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "handle",
+            "type": "string"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "display_name",
+            "type": "string"
+          },
+          {
+            "name": "metadata_uri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "reputation_score",
+            "type": "i64"
+          },
+          {
+            "name": "attestation_count",
+            "type": "u64"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "updated_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RegistryConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "hoshi_issuer",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "WalletIndex",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "handle",
+            "type": "string"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "updated_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ]
+}

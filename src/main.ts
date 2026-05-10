@@ -7,6 +7,7 @@ import { agentRunRouter } from "./routes/agent-run";
 import { healthRouter } from "./routes/health";
 import { lifiRouter } from "./routes/lifi";
 import { authRouter } from "./routes/auth";
+import { onchainRouter } from "./routes/onchain";
 import { createLogger } from "./lib/logger";
 import { getLlmDebugInfo } from "./llm/client";
 import { loadFromSupabase } from "./services/agent-store";
@@ -29,6 +30,7 @@ app.use("*", cors({
 app.route("/api/health", healthRouter);
 app.route("/api/lifi", lifiRouter);
 app.route("/api/auth", authRouter);
+app.route("/api/onchain", onchainRouter);
 app.route("/api/agents", agentRunRouter);
 app.route("/api/agents", agentsRouter);
 
@@ -40,6 +42,7 @@ app.get("/", (c) =>
     docs: "/api/health",
     endpoints: {
       auth: "/api/auth/login",
+      onchain: "/api/onchain/register-agent/:id",
       lifiQuote: "/api/lifi/quote",
       agents: "/api/agents",
       run: "/api/agents/:id/run",
@@ -58,7 +61,7 @@ void loadFromSupabase().then(() => {
   startScheduler();
 });
 
-// Vercel runs Hono via `export default` (serverless). Local / Docker use Node server.
+// Vercel runs via api/[[...route]].ts + @hono/node-server/vercel handle. Local uses Node server.
 export default app;
 
 if (!process.env.VERCEL) {
