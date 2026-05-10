@@ -1,16 +1,17 @@
 import { Hono } from "hono";
 import { PublicKey } from "@solana/web3.js";
-import { getAgent } from "../services/agent-store";
-import { buildRegisterAgentTx, buildStrategyMask } from "../solana/registry";
-import { requireAuth } from "../services/auth";
+import { getAgent } from "../services/agent-store.js";
+import { buildRegisterAgentTx, buildStrategyMask } from "../solana/registry.js";
+import { requireAuth } from "../services/auth.js";
+import type { OishiEnv } from "../types/hono-env.js";
 
-export const onchainRouter = new Hono();
+export const onchainRouter = new Hono<OishiEnv>();
 
 // ── POST /api/onchain/register-agent/:id ───────────────────────────────
 // Builds a serialized Solana transaction for registering the agent on-chain.
 // Frontend signs and sends it.
 onchainRouter.post("/register-agent/:id", requireAuth(), async (c) => {
-  const wallet = (c as Record<string, unknown>).wallet as string;
+  const wallet = c.get("wallet");
   const id = c.req.param("id");
   const agent = getAgent(id);
 
