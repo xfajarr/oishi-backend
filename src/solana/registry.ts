@@ -16,7 +16,12 @@ const RPC = process.env.SOLANA_RPC_URL ?? "https://api.devnet.solana.com";
 
 function getProgram() {
   const connection = new Connection(RPC, "confirmed");
-  const provider = new AnchorProvider(connection, {} as any, { commitment: "confirmed" });
+  const wallet = {
+    signTransaction: async () => { throw new Error("No wallet"); },
+    signAllTransactions: async () => { throw new Error("No wallet"); },
+    publicKey: PublicKey.default,
+  };
+  const provider = new AnchorProvider(connection, wallet, { commitment: "confirmed" });
   // Anchor ≥0.30: Program(idl, provider) — program id comes from idl.address
   return new Program(idlJson as Idl, provider);
 }

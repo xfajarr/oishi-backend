@@ -1,0 +1,83 @@
+[
+  {
+    "id": "3daa86b7-8990-46e4-bffe-9d5d4d2449ea",
+    "owner": "TestWallet11111111111111111111111111111111",
+    "handle": "@kamino-farmer.oishi",
+    "displayName": "Kamino Farmer",
+    "strategyId": "kamino",
+    "commonRules": {
+      "dailyCapUsd": 75,
+      "maxPerTxUsd": 35,
+      "notifyOnBlock": true,
+      "quietHoursEnabled": false
+    },
+    "specificRules": {
+      "apyLean": 45,
+      "stableOnly": true
+    },
+    "status": "active",
+    "kyaIdentityPda": null,
+    "kyaReputationScore": 0,
+    "attestationCount": 0,
+    "totalEarnings": 0,
+    "totalTxCount": 0,
+    "cycleCount": 0,
+    "createdAt": 1778390763960,
+    "updatedAt": 1778390763960,
+    "lastActiveAt": null
+  },
+  {
+    "id": "96f25290-1093-4c22-b8fb-b3224ed5a3d7",
+    "owner": "Q1n8YoVgFLaTAb5fsh3cZY119Zgh1p8iL4rKDRYaqX5",
+    "handle": "@testest.oishi",
+    "displayName": "testest",
+    "strategyId": "meteora",
+    "commonRules": {
+      "dailyCapUsd": 75,
+      "maxPerTxUsd": 35,
+      "notifyOnBlock": true,
+      "quietHoursEnabled": false
+    },
+    "specificRules": {
+      "ilTolerance": 40,
+      "autoRebal": true
+    },
+    "status": "active",
+    "kyaIdentityPda": null,
+    "kyaReputationScore": 0,
+    "attestationCount": 0,
+    "totalEarnings": 0,
+    "totalTxCount": 0,
+    "cycleCount": 0,
+    "createdAt": 1778391047096,
+    "updatedAt": 1778391047096,
+    "lastActiveAt": null
+  },
+  {
+    "id": "a2ae24b4-4738-4c19-9ccc-4625bb2a284c",
+    "owner": "TestWallet11111111111111111111111111111111",
+    "handle": "@dcabot.oishi",
+    "displayName": "DCA Bot",
+    "strategyId": "jupiter",
+    "commonRules": {
+      "dailyCapUsd": 75,
+      "maxPerTxUsd": 35,
+      "notifyOnBlock": true,
+      "quietHoursEnabled": false
+    },
+    "specificRules": {
+      "slippageBps": 50,
+      "auditedRoutes": true
+    },
+    "status": "active",
+    "kyaIdentityPda": null,
+    "kyaReputationScore": 0,
+    "attestationCount": 0,
+    "totalEarnings": 0,
+    "totalTxCount": 0,
+    "cycleCount": 0,
+    "createdAt": 1778391713866,
+    "updatedAt": 1778391713866,
+    "lastActiveAt": null
+  }
+]
