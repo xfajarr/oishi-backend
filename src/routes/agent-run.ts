@@ -1,9 +1,11 @@
 import { Hono } from "hono";
+import { z } from "zod";
 import { getAgent } from "../services/agent-store";
 import { getContext } from "../services/context-store";
 import { getSkillsForStrategy } from "../models/skill";
 import { triggerAgentNow, getSchedulerStats } from "../services/scheduler";
 import { requireAuth } from "../services/auth";
+import { runAgentChat } from "../llm/agent-loop";
 
 export const agentRunRouter = new Hono();
 
@@ -11,6 +13,34 @@ export const agentRunRouter = new Hono();
 agentRunRouter.get("/_scheduler", (c) => {
   const stats = getSchedulerStats();
   return c.json(stats);
+});
+
+const chatBodySchema = z.object({
+  message: z.string().min(1).max(8000),
+});
+
+// ── Chat (LLM turn from app) — register before generic :id routes if needed ──
+agentRunRouter.post("/:id/chat", requireAuth(), async (c) => {
+  const wallet = (c as Record<string, unknown>).wallet as string;
+  const id = c.req.param("id");
+  const agent = getAgent(id);
+
+  if (!agent) return c.json({ error: "Agent not found" }, 404);
+  if (agent.owner !== wallet) return c.json({ error: "Not your agent" }, 403);
+
+  let body: z.infer<typeof chatBodySchema>;
+  try {
+    body = chatBodySchema.parse(await c.req.json());
+  } catch {
+    return c.json({ error: "Invalid JSON body (expected { \"message\": string })" }, 400);
+  }
+
+  const result = await runAgentChat(id, body.message);
+  if (result.error) {
+    const status = result.error.startsWith("LLM error") ? 502 : 400;
+    return c.json({ error: result.error }, status);
+  }
+  return c.json({ reply: result.reply });
 });
 
 // ── Force-trigger agent cycle ──────────────────────────────────────────

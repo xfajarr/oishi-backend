@@ -9,8 +9,10 @@
   "dependencies": {
     "@hono/node-server": "^1.19.14",
     "@noble/ed25519": "^3.1.0",
+    "@supabase/supabase-js": "^2.105.4",
     "bs58": "^6.0.0",
     "hono": "^4.12.18",
+    "jose": "^6.2.3",
     "openai": "^6.37.0",
     "tweetnacl": "^1.0.3",
     "uuid": "^14.0.0",

@@ -1,15 +1,19 @@
 import nacl from "tweetnacl";
 import bs58 from "bs58";
+import { verifyToken, extractBearerToken } from "./jwt";
+import { createLogger } from "../lib/logger";
 
-// ── Solana wallet signature verification ───────────────────────────────
+const log = createLogger("auth");
 const DEV_MODE = process.env.OISHI_DEV_MODE === "1";
 
+// ── Types ───────────────────────────────────────────────────────────────
 export interface AuthPayload {
   wallet: string;
   signature: string;
   message: string;
 }
 
+// ── Wallet signature verification ───────────────────────────────────────
 export function verifyWalletSignature(payload: AuthPayload): boolean {
   if (DEV_MODE) return true;
   try {
@@ -22,13 +26,13 @@ export function verifyWalletSignature(payload: AuthPayload): boolean {
   }
 }
 
+/** Extract raw wallet auth headers */
 export function extractAuth(headers: { get: (name: string) => string | undefined }): AuthPayload | null {
   const wallet = headers.get("x-oishi-wallet");
   const signature = headers.get("x-oishi-signature");
   const message = headers.get("x-oishi-message");
 
   if (DEV_MODE && wallet) {
-    // In dev mode, only wallet header is required
     return { wallet, signature: "dev", message: JSON.stringify({ timestamp: Date.now() }) };
   }
 
@@ -36,26 +40,49 @@ export function extractAuth(headers: { get: (name: string) => string | undefined
   return { wallet, signature, message };
 }
 
+// ── Hono middleware — supports Bearer token OR wallet signature ──────────
 export function requireAuth() {
   return async function authMiddleware(
-    c: { req: { header: (n: string) => string | undefined }; json: (body: unknown, status: number) => Response },
+    c: {
+      req: { header: (n: string) => string | undefined };
+      json: (body: unknown, status: number) => Response;
+    },
     next: () => Promise<void>,
   ) {
+    // 1. Try Bearer token first (persistent session)
+    const authHeader = c.req.header("Authorization");
+    const token = extractBearerToken(authHeader);
+
+    if (token) {
+      const payload = await verifyToken(token);
+      if (payload) {
+        (c as Record<string, unknown>).wallet = payload.wallet;
+        await next();
+        return;
+      }
+      // Token invalid — continue to try wallet signature
+    }
+
+    // 2. Fall back to wallet signature (for login or legacy clients)
     const headers = {
       get: (name: string) => c.req.header(name),
     };
 
     const auth = extractAuth(headers);
-
     if (!auth) {
-      return c.json({ error: "Missing auth headers (x-oishi-wallet, x-oishi-signature, x-oishi-message)" }, 401);
+      if (token) {
+        return c.json({ error: "Session expired. Please sign in again." }, 401);
+      }
+      return c.json(
+        { error: "Authentication required. Provide Bearer token or wallet signature headers." },
+        401,
+      );
     }
 
     if (!verifyWalletSignature(auth)) {
       return c.json({ error: "Invalid wallet signature" }, 401);
     }
 
-    // Check timestamp is within 5 minutes (skip in dev mode)
     if (!DEV_MODE) {
       try {
         const parsed = JSON.parse(auth.message);

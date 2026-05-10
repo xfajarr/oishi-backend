@@ -6,7 +6,10 @@ import { agentsRouter } from "./routes/agents";
 import { agentRunRouter } from "./routes/agent-run";
 import { healthRouter } from "./routes/health";
 import { lifiRouter } from "./routes/lifi";
+import { authRouter } from "./routes/auth";
 import { createLogger } from "./lib/logger";
+import { getLlmDebugInfo } from "./llm/client";
+import { loadFromSupabase } from "./services/agent-store";
 import { startScheduler } from "./services/scheduler";
 
 const logger = createLogger("server");
@@ -17,7 +20,7 @@ const app = new Hono();
 app.use("*", cors({
   origin: "*",
   allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowHeaders: ["Content-Type", "x-oishi-wallet", "x-oishi-signature", "x-oishi-message"],
+  allowHeaders: ["Content-Type", "Authorization", "x-oishi-wallet", "x-oishi-signature", "x-oishi-message"],
   exposeHeaders: [],
   maxAge: 86400,
 }));
@@ -25,6 +28,7 @@ app.use("*", cors({
 // ── Routes (agentRunRouter first: its _scheduler route must beat agentsRouter's :id) ─
 app.route("/api/health", healthRouter);
 app.route("/api/lifi", lifiRouter);
+app.route("/api/auth", authRouter);
 app.route("/api/agents", agentRunRouter);
 app.route("/api/agents", agentsRouter);
 
@@ -35,9 +39,11 @@ app.get("/", (c) =>
     version: "1.0.0",
     docs: "/api/health",
     endpoints: {
+      auth: "/api/auth/login",
       lifiQuote: "/api/lifi/quote",
       agents: "/api/agents",
       run: "/api/agents/:id/run",
+      chat: "/api/agents/:id/chat",
       context: "/api/agents/:id/context",
       decisions: "/api/agents/:id/decisions",
       skills: "/api/agents/:id/skills",
@@ -52,9 +58,11 @@ const port = parseInt(process.env.PORT ?? "3001", 10);
 
 serve({ fetch: app.fetch, port }, (info) => {
   logger.info(`Oishi Agent Backend running on http://localhost:${info.port}`);
-  logger.info(`LLM: ${process.env.LLM_MODEL ?? "gpt-4o"} @ ${process.env.LLM_BASE_URL ?? "api.openai.com/v1"}`, { model: process.env.LLM_MODEL, baseUrl: process.env.LLM_BASE_URL });
+  logger.info(`LLM: ${getLlmDebugInfo()}`);
 
-  // Start the agent scheduler
-  startScheduler();
+  // Load agents from Supabase (if configured) then start scheduler
+  loadFromSupabase().then(() => {
+    startScheduler();
+  });
   logger.info(`Scheduler: waking active agents every ${parseInt(process.env.AGENT_CYCLE_MS ?? "60000", 10) / 1000}s`);
 });
