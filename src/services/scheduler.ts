@@ -1,10 +1,13 @@
 import { getActiveAgents, persistAll } from "./agent-store";
 import { persistAll as persistContexts } from "./context-store";
+import { createLogger } from "../lib/logger";
 import { runAgentCycle } from "../llm/agent-loop";
 
 // ── Scheduler configuration ────────────────────────────────────────────
 const CYCLE_INTERVAL_MS = parseInt(process.env.AGENT_CYCLE_MS ?? "60000", 10); // default 60s
 const PERSIST_INTERVAL_MS = parseInt(process.env.PERSIST_MS ?? "30000", 10); // default 30s
+
+const log = createLogger("scheduler");
 
 let schedulerTimer: ReturnType<typeof setInterval> | null = null;
 let persistTimer: ReturnType<typeof setInterval> | null = null;
@@ -45,7 +48,7 @@ async function tickAllAgents() {
       return;
     }
 
-    console.log(`[scheduler] Waking ${agents.length} active agents...`);
+    log.info(`Waking ${agents.length} active agents`);
 
     // Run agents in parallel but throttle concurrency
     const batchSize = 5;
@@ -63,15 +66,15 @@ async function tickAllAgents() {
 
       for (const r of results) {
         if (r.status === "rejected") {
-          console.error("[scheduler] Agent cycle failed:", r.reason);
+          log.error("Agent cycle failed", { reason: String(r.reason) });
         } else if (!r.value.result.success) {
-          console.warn(`[scheduler] ${r.value.handle}: ${r.value.result.error}`);
+          log.warn(`${r.value.handle}: ${r.value.result.error}`);
         } else {
           const { action, blocked, blockReason } = r.value.result;
           if (blocked) {
-            console.log(`[scheduler] ${r.value.handle}: ${action} → BLOCKED (${blockReason})`);
+            log.info(`${r.value.handle}: ${action} → BLOCKED`, { reason: blockReason });
           } else {
-            console.log(`[scheduler] ${r.value.handle}: ${action ?? "observed"}`);
+            log.info(`${r.value.handle}: ${action ?? "observed"}`);
           }
         }
       }
@@ -79,7 +82,7 @@ async function tickAllAgents() {
 
     stats.lastCycleAt = Date.now();
   } catch (err) {
-    console.error("[scheduler] Cycle failed:", err);
+    log.error("Scheduler cycle failed", { error: String(err) });
   } finally {
     isRunning = false;
   }
@@ -95,7 +98,7 @@ function persistAllData() {
 export function startScheduler() {
   if (schedulerTimer) return;
 
-  console.log(`[scheduler] Starting — cycle: ${CYCLE_INTERVAL_MS / 1000}s, persist: ${PERSIST_INTERVAL_MS / 1000}s`);
+  log.info(`Scheduler started — cycle: ${CYCLE_INTERVAL_MS / 1000}s, persist: ${PERSIST_INTERVAL_MS / 1000}s`);
 
   // Run first cycle immediately on start
   tickAllAgents();
@@ -115,7 +118,7 @@ export function stopScheduler() {
 
   // Final persist
   persistAllData();
-  console.log("[scheduler] Stopped");
+  log.info("Scheduler stopped");
 }
 
 export function getSchedulerStats(): SchedulerStats {

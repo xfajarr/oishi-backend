@@ -1,12 +1,15 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import type { AgentContext, AgentMessage, AgentDecision, AgentState } from "../models/context";
+import { createLogger } from "../lib/logger";
 import { createDefaultContext } from "../models/context";
 
 const DATA_DIR = join(import.meta.dirname, "..", "data");
 const CONTEXTS_FILE = join(DATA_DIR, "contexts.json");
 
 // ── In-memory store ───────────────────────────────────────────────────
+const log = createLogger("context-store");
+
 const contexts = new Map<string, AgentContext>();
 
 // ── Persistence ────────────────────────────────────────────────────────
@@ -25,9 +28,9 @@ function loadFromFile() {
     const raw = readFileSync(CONTEXTS_FILE, "utf-8");
     const data: AgentContext[] = JSON.parse(raw);
     for (const ctx of data) contexts.set(ctx.agentId, ctx);
-    console.log(`[context] Loaded ${contexts.size} agent contexts from disk`);
+    log.info(`Loaded ${contexts.size} agent contexts from disk`);
   } catch (err) {
-    console.warn("[context] Could not load contexts:", err);
+    log.warn("Could not load contexts from disk", { error: String(err) });
   }
 }
 loadFromFile();

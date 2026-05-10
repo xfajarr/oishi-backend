@@ -11,7 +11,10 @@ import {
 import { initContext } from "../services/context-store";
 import { buildSystemPrompt } from "../llm/prompts";
 import { CreateAgentSchema, UpdateRulesSchema, STRATEGY_CONFIG } from "../models/agent";
+import { createLogger } from "../lib/logger";
 import { requireAuth } from "../services/auth";
+
+const log = createLogger("agents");
 
 export const agentsRouter = new Hono();
 
@@ -51,7 +54,7 @@ agentsRouter.post("/", requireAuth(), async (c) => {
   );
   initContext(agent.id, prompt);
 
-  console.log(`[agents] Created: ${agent.handle} (${agent.strategyId}) by ${wallet.slice(0, 6)}...`);
+  log.info(`Agent created: ${agent.handle}`, { strategy: agent.strategyId, wallet: wallet.slice(0, 6) + "..." });
 
   return c.json({ agent }, 201);
 });

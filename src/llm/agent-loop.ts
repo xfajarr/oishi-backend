@@ -12,9 +12,12 @@ import { callLlm, executeToolCall, getLlmModel } from "./client";
 import { buildSystemPrompt } from "./prompts";
 import { checkPolicy, getEnabledSkills } from "./tools";
 import type { AgentMessage, AgentDecision } from "../models/context";
+import { createLogger } from "../lib/logger";
 import { nextDailyReset } from "../models/context";
 
 // ── Run one cycle for a single agent ───────────────────────────────────
+const log = createLogger("agent-loop");
+
 export async function runAgentCycle(agentId: string): Promise<{
   success: boolean;
   action?: string;
@@ -75,7 +78,7 @@ export async function runAgentCycle(agentId: string): Promise<{
       userMessage: "Analyze the current state and decide what action to take this cycle. Be concise.",
     });
   } catch (err) {
-    console.error(`[agent-loop] LLM call failed for ${agent.handle}:`, err);
+    log.error(`LLM call failed for ${agent.handle}`, { error: String(err) });
     return { success: false, error: `LLM error: ${String(err)}` };
   }
 

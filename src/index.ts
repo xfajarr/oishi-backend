@@ -1,10 +1,15 @@
+import "./lib/env";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { agentsRouter } from "./routes/agents";
 import { agentRunRouter } from "./routes/agent-run";
 import { healthRouter } from "./routes/health";
+import { lifiRouter } from "./routes/lifi";
+import { createLogger } from "./lib/logger";
 import { startScheduler } from "./services/scheduler";
+
+const logger = createLogger("server");
 
 const app = new Hono();
 
@@ -19,6 +24,7 @@ app.use("*", cors({
 
 // ── Routes (agentRunRouter first: its _scheduler route must beat agentsRouter's :id) ─
 app.route("/api/health", healthRouter);
+app.route("/api/lifi", lifiRouter);
 app.route("/api/agents", agentRunRouter);
 app.route("/api/agents", agentsRouter);
 
@@ -29,6 +35,7 @@ app.get("/", (c) =>
     version: "1.0.0",
     docs: "/api/health",
     endpoints: {
+      lifiQuote: "/api/lifi/quote",
       agents: "/api/agents",
       run: "/api/agents/:id/run",
       context: "/api/agents/:id/context",
@@ -44,10 +51,10 @@ app.get("/", (c) =>
 const port = parseInt(process.env.PORT ?? "3001", 10);
 
 serve({ fetch: app.fetch, port }, (info) => {
-  console.log(`\n🚀 Oishi Agent Backend running on http://localhost:${info.port}`);
-  console.log(`   LLM: ${process.env.LLM_MODEL ?? "gpt-4o"} @ ${process.env.LLM_BASE_URL ?? "api.openai.com/v1"}`);
+  logger.info(`Oishi Agent Backend running on http://localhost:${info.port}`);
+  logger.info(`LLM: ${process.env.LLM_MODEL ?? "gpt-4o"} @ ${process.env.LLM_BASE_URL ?? "api.openai.com/v1"}`, { model: process.env.LLM_MODEL, baseUrl: process.env.LLM_BASE_URL });
 
   // Start the agent scheduler
   startScheduler();
-  console.log(`   Scheduler: waking active agents every ${parseInt(process.env.AGENT_CYCLE_MS ?? "60000", 10) / 1000}s\n`);
+  logger.info(`Scheduler: waking active agents every ${parseInt(process.env.AGENT_CYCLE_MS ?? "60000", 10) / 1000}s`);
 });

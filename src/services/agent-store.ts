@@ -1,6 +1,7 @@
 import { v4 as uuid } from "uuid";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
+import { createLogger } from "../lib/logger";
 import type {
   Agent,
   AgentStatus,
@@ -15,6 +16,8 @@ const DATA_DIR = join(import.meta.dirname, "..", "data");
 const AGENTS_FILE = join(DATA_DIR, "agents.json");
 
 // ── In-memory store ───────────────────────────────────────────────────
+const log = createLogger("agent-store");
+
 const agents = new Map<string, Agent>();
 
 // ── Persistence ────────────────────────────────────────────────────────
@@ -33,9 +36,9 @@ function loadFromFile() {
     const raw = readFileSync(AGENTS_FILE, "utf-8");
     const data: Agent[] = JSON.parse(raw);
     for (const agent of data) agents.set(agent.id, agent);
-    console.log(`[store] Loaded ${agents.size} agents from disk`);
+    log.info(`Loaded ${agents.size} agents from disk`);
   } catch (err) {
-    console.warn("[store] Could not load agents:", err);
+    log.warn("Could not load agents from disk", { error: String(err) });
   }
 }
 loadFromFile();
