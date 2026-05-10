@@ -5,7 +5,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const ENV_PATH = join(import.meta.dirname, "..", "..", ".env");
+const ENV_PATH = join(process.cwd(), ".env");
 
 try {
   const raw = readFileSync(ENV_PATH, "utf-8");

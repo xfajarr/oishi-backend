@@ -86,12 +86,12 @@ export const CreateAgentSchema = z.object({
   handle: z.string().min(3).max(30).regex(/^@[a-z0-9][a-z0-9-]*[a-z0-9]\.oishi$/, "Invalid handle format"),
   strategyId: z.enum(STRATEGY_IDS),
   commonRules: CommonRulesSchema.optional().default(defaultCommonRules),
-  specificRules: z.record(z.union([z.number(), z.boolean()])).optional().default({}),
+  specificRules: z.record(z.string(), z.union([z.number(), z.boolean()])).optional().default({}),
 });
 export type CreateAgentInput = z.infer<typeof CreateAgentSchema>;
 
 export const UpdateRulesSchema = z.object({
   commonRules: CommonRulesSchema.optional(),
-  specificRules: z.record(z.union([z.number(), z.boolean()])).optional(),
+  specificRules: z.record(z.string(), z.union([z.number(), z.boolean()])).optional(),
 });
 export type UpdateRulesInput = z.infer<typeof UpdateRulesSchema>;
