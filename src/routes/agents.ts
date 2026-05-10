@@ -1,3 +1,4 @@
+import { Connection, PublicKey } from "@solana/web3.js";
 import { Hono } from "hono";
 import {
   createAgent,
@@ -131,7 +132,7 @@ agentsRouter.post("/:id/resume", requireAuth(), (c) => {
 
 // ── Get agent wallet balance ─────────────────────────────────────────
 agentsRouter.get("/:id/balance", requireAuth(), async (c) => {
-  const wallet = (c as Record<string, unknown>).wallet as string;
+  const wallet = c.get("wallet");
   const id = c.req.param("id");
   const agent = getAgent(id);
 
