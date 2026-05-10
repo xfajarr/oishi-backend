@@ -3,7 +3,7 @@
  * User signs wallet once → gets a JWT → uses Bearer token for all subsequent calls.
  */
 import { SignJWT, jwtVerify } from "jose";
-import { createLogger } from "../lib/logger";
+import { createLogger } from "../lib/logger.js";
 
 const log = createLogger("jwt");
 

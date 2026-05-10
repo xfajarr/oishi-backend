@@ -1,7 +1,7 @@
-import { getActiveAgents, persistAll } from "./agent-store";
-import { persistAll as persistContexts } from "./context-store";
-import { createLogger } from "../lib/logger";
-import { runAgentCycle } from "../llm/agent-loop";
+import { getActiveAgents, persistAll } from "./agent-store.js";
+import { persistAll as persistContexts } from "./context-store.js";
+import { createLogger } from "../lib/logger.js";
+import { runAgentCycle } from "../llm/agent-loop.js";
 
 // ── Scheduler configuration ────────────────────────────────────────────
 const CYCLE_INTERVAL_MS = parseInt(process.env.AGENT_CYCLE_MS ?? "60000", 10); // default 60s

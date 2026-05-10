@@ -1,7 +1,7 @@
 import { Hono } from "hono";
-import { verifyWalletSignature, extractAuth } from "../services/auth";
-import { signToken } from "../services/jwt";
-import { createLogger } from "../lib/logger";
+import { verifyWalletSignature, extractAuth } from "../services/auth.js";
+import { signToken } from "../services/jwt.js";
+import { createLogger } from "../lib/logger.js";
 
 const log = createLogger("auth");
 

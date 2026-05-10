@@ -1,6 +1,6 @@
 import { OpenAI, APIError } from "openai";
-import type { AgentMessage } from "../models/context";
-import type { AgentSkill } from "../models/skill";
+import type { AgentMessage } from "../models/context.js";
+import type { AgentSkill } from "../models/skill.js";
 
 type ChatCompletionMessageParam = OpenAI.Chat.Completions.ChatCompletionMessageParam;
 type ChatCompletionTool = OpenAI.Chat.Completions.ChatCompletionTool;

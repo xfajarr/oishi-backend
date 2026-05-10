@@ -1,5 +1,5 @@
-import type { StrategyId } from "../models/agent";
-import type { CommonRules, SpecificRules } from "../models/agent";
+import type { StrategyId } from "../models/agent.js";
+import type { CommonRules, SpecificRules } from "../models/agent.js";
 
 // ── Strategy-specific system prompts ───────────────────────────────────
 export function buildSystemPrompt(

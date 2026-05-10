@@ -1,18 +1,18 @@
 import { v4 as uuid } from "uuid";
-import { getAgent, updateAgentState } from "../services/agent-store";
+import { getAgent, updateAgentState } from "../services/agent-store.js";
 import {
   getContext,
   initContext,
   addMessages,
   persistAll as persistContexts,
-} from "../services/context-store";
-import { getSkillsForStrategy } from "../models/skill";
-import { callLlm, executeToolCall } from "./client";
-import { buildSystemPrompt } from "./prompts";
-import { checkPolicy, getEnabledSkills } from "./tools";
-import type { AgentMessage, AgentDecision } from "../models/context";
-import { createLogger } from "../lib/logger";
-import { nextDailyReset } from "../models/context";
+} from "../services/context-store.js";
+import { getSkillsForStrategy } from "../models/skill.js";
+import { callLlm, executeToolCall } from "./client.js";
+import { buildSystemPrompt } from "./prompts.js";
+import { checkPolicy, getEnabledSkills } from "./tools.js";
+import type { AgentMessage, AgentDecision } from "../models/context.js";
+import { createLogger } from "../lib/logger.js";
+import { nextDailyReset } from "../models/context.js";
 
 // ── Run one cycle for a single agent ───────────────────────────────────
 const log = createLogger("agent-loop");

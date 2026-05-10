@@ -5,16 +5,16 @@
 import { v4 as uuid } from "uuid";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { supabase, isSupabaseReady } from "../lib/supabase";
-import { createLogger } from "../lib/logger";
+import { supabase, isSupabaseReady } from "../lib/supabase.js";
+import { createLogger } from "../lib/logger.js";
 import type {
   Agent,
   AgentStatus,
   CommonRules,
   CreateAgentInput,
   SpecificRules,
-} from "../models/agent";
-import { DEFAULT_SPECIFIC, defaultCommonRules } from "../models/agent";
+} from "../models/agent.js";
+import { DEFAULT_SPECIFIC, defaultCommonRules } from "../models/agent.js";
 
 const log = createLogger("agent-store");
 

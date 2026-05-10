@@ -9,10 +9,10 @@ import { healthRouter } from "./routes/health.js";
 import { lifiRouter } from "./routes/lifi.js";
 import { authRouter } from "./routes/auth.js";
 import { onchainRouter } from "./routes/onchain.js";
-import { createLogger } from "./lib/logger";
-import { getLlmDebugInfo } from "./llm/client";
-import { loadFromSupabase } from "./services/agent-store";
-import { startScheduler } from "./services/scheduler";
+import { createLogger } from "./lib/logger.js";
+import { getLlmDebugInfo } from "./llm/client.js";
+import { loadFromSupabase } from "./services/agent-store.js";
+import { startScheduler } from "./services/scheduler.js";
 
 const logger = createLogger("server");
 

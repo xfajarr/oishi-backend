@@ -1,4 +1,4 @@
-import type { StrategyId } from "./agent";
+import type { StrategyId } from "./agent.js";
 
 // ── Skill (LLM-callable tool) ─────────────────────────────────────────
 export interface AgentSkill {

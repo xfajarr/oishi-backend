@@ -3,10 +3,10 @@
  */
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { supabase, isSupabaseReady } from "../lib/supabase";
-import { createLogger } from "../lib/logger";
-import type { AgentContext, AgentMessage, AgentDecision, AgentState } from "../models/context";
-import { createDefaultContext } from "../models/context";
+import { supabase, isSupabaseReady } from "../lib/supabase.js";
+import { createLogger } from "../lib/logger.js";
+import type { AgentContext, AgentMessage, AgentDecision, AgentState } from "../models/context.js";
+import { createDefaultContext } from "../models/context.js";
 
 const log = createLogger("context-store");
 

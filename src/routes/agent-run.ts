@@ -1,12 +1,12 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { getAgent } from "../services/agent-store";
-import { getContext } from "../services/context-store";
-import { getSkillsForStrategy } from "../models/skill";
-import { triggerAgentNow, getSchedulerStats } from "../services/scheduler";
-import { requireAuth } from "../services/auth";
-import { runAgentChat } from "../llm/agent-loop";
-import type { OishiEnv } from "../types/hono-env";
+import { getAgent } from "../services/agent-store.js";
+import { getContext } from "../services/context-store.js";
+import { getSkillsForStrategy } from "../models/skill.js";
+import { triggerAgentNow, getSchedulerStats } from "../services/scheduler.js";
+import { requireAuth } from "../services/auth.js";
+import { runAgentChat } from "../llm/agent-loop.js";
+import type { OishiEnv } from "../types/hono-env.js";
 
 export const agentRunRouter = new Hono<OishiEnv>();
 

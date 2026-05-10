@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { getLlmModel } from "../llm/client";
+import { getLlmModel } from "../llm/client.js";
 
 export const healthRouter = new Hono();
 

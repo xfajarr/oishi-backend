@@ -1,5 +1,5 @@
-import type { AgentSkill } from "../models/skill";
-import type { CommonRules, SpecificRules } from "../models/agent";
+import type { AgentSkill } from "../models/skill.js";
+import type { CommonRules, SpecificRules } from "../models/agent.js";
 
 // ── Policy enforcement: check if an agent action is within rules ───────
 export interface PolicyCheck {

@@ -7,18 +7,18 @@ import {
   updateAgentRules,
   updateAgentStatus,
   deleteAgent,
-} from "../services/agent-store";
-import { initContext } from "../services/context-store";
-import { buildSystemPrompt } from "../llm/prompts";
+} from "../services/agent-store.js";
+import { initContext } from "../services/context-store.js";
+import { buildSystemPrompt } from "../llm/prompts.js";
 import {
   CreateAgentSchema,
   UpdateRulesSchema,
   STRATEGY_CONFIG,
   STRATEGY_IDS,
-} from "../models/agent";
-import { createLogger } from "../lib/logger";
-import { requireAuth } from "../services/auth";
-import type { OishiEnv } from "../types/hono-env";
+} from "../models/agent.js";
+import { createLogger } from "../lib/logger.js";
+import { requireAuth } from "../services/auth.js";
+import type { OishiEnv } from "../types/hono-env.js";
 
 const log = createLogger("agents");
 
