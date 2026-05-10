@@ -1,5 +1,6 @@
 import "./lib/env.js";
 import { serve } from "@hono/node-server";
+// Local dev: Bun auto-serves the default export. Only use manual serve for non-Bun runtimes.
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { agentsRouter } from "./routes/agents";
@@ -64,7 +65,10 @@ void loadFromSupabase().then(() => {
 // Vercel runs via api/[[...route]].ts + @hono/node-server/vercel handle. Local uses Node server.
 export default app;
 
-if (!process.env.VERCEL) {
+// Bun auto-serves `export default app`. Only manually serve for Node/tsx runtime.
+// @ts-expect-error — Bun is a global in Bun runtime
+const isBun = typeof Bun !== "undefined";
+if (!isBun && !process.env.VERCEL) {
   const port = parseInt(process.env.PORT ?? "3001", 10);
   serve({ fetch: app.fetch, port }, (info) => {
     logger.info(`Oishi Agent Backend running on http://localhost:${info.port}`);
