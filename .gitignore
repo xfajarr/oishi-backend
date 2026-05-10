@@ -11,6 +11,10 @@
 # deps
 node_modules/
 
+# build output (esbuild → dist/)
+dist/
+build/
+
 # env
 .env
 .env.production
