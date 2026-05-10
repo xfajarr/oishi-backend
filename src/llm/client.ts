@@ -1,6 +1,10 @@
-import OpenAI, { APIError } from "openai";
+import { OpenAI, APIError } from "openai";
 import type { AgentMessage } from "../models/context";
 import type { AgentSkill } from "../models/skill";
+
+type ChatCompletionMessageParam = OpenAI.Chat.Completions.ChatCompletionMessageParam;
+type ChatCompletionTool = OpenAI.Chat.Completions.ChatCompletionTool;
+type ChatCompletionMessageToolCall = OpenAI.Chat.Completions.ChatCompletionMessageToolCall;
 
 // ── OpenAI-compatible client (works with fetch.ai, tokenrouter, LM Studio, etc.) ──
 /** Many providers need the path `/v1` (full URL e.g. `https://api.openai.com/v1`). Missing it yields HTTP 400 with an empty body. */
@@ -64,7 +68,7 @@ export function getLlmDebugInfo(): string {
   return `${LLM_MODEL} @ ${LLM_BASE_URL}`;
 }
 
-function agentMessageToOpenAI(m: AgentMessage): OpenAI.Chat.Completions.ChatCompletionMessageParam {
+function agentMessageToOpenAI(m: AgentMessage): ChatCompletionMessageParam {
   if (m.role === "tool") {
     return {
       role: "tool",
@@ -76,7 +80,7 @@ function agentMessageToOpenAI(m: AgentMessage): OpenAI.Chat.Completions.ChatComp
     return {
       role: "assistant",
       content: m.content,
-      tool_calls: m.toolCalls.map((tc) => ({
+      tool_calls: m.toolCalls.map((tc: NonNullable<typeof m.toolCalls>[number]) => ({
         id: tc.id,
         type: "function" as const,
         function: {
@@ -119,8 +123,8 @@ export async function callLlm(params: LlmCallParams): Promise<LlmResponse> {
   try {
     response = await client.chat.completions.create({
       model: LLM_MODEL,
-      messages: chatMessages as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
-      tools: openaiTools.length > 0 ? (openaiTools as OpenAI.Chat.Completions.ChatCompletionTool[]) : undefined,
+      messages: chatMessages as ChatCompletionMessageParam[],
+      tools: openaiTools.length > 0 ? (openaiTools as ChatCompletionTool[]) : undefined,
       tool_choice: openaiTools.length > 0 ? "auto" : undefined,
       temperature: 0.4,
       max_tokens: 1000,
@@ -133,11 +137,16 @@ export async function callLlm(params: LlmCallParams): Promise<LlmResponse> {
   const choice = response.choices[0]?.message;
   return {
     content: choice?.content ?? null,
-    toolCalls: (choice?.tool_calls ?? []).map((tc) => ({
-      id: tc.id,
-      name: tc.function.name,
-      arguments: JSON.parse(tc.function.arguments),
-    })),
+    toolCalls: (choice?.tool_calls ?? []).flatMap((tc: ChatCompletionMessageToolCall) => {
+      if (tc.type !== "function") return [];
+      return [
+        {
+          id: tc.id,
+          name: tc.function.name,
+          arguments: JSON.parse(tc.function.arguments) as Record<string, unknown>,
+        },
+      ];
+    }),
   };
 }
 
