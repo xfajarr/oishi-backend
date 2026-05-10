@@ -1,6 +1,5 @@
 import "./lib/env.js";
 import { serve } from "@hono/node-server";
-// Local dev: Bun auto-serves the default export. Only use manual serve for non-Bun runtimes.
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { agentsRouter } from "./routes/agents.js";
@@ -15,19 +14,23 @@ import { loadFromSupabase } from "./services/agent-store.js";
 import { startScheduler } from "./services/scheduler.js";
 
 const logger = createLogger("server");
-
 const app = new Hono();
 
-// ── CORS (allow frontend on any origin for hackathon) ──────────────────
+// ── CORS (allow frontend) ─────────────────────────────────────────────────
 app.use("*", cors({
-  origin: "*",
+  origin: [
+    "https://oishiapp.vercel.app",
+    "http://localhost:3000",
+    "http://localhost:5173",
+  ],
+  credentials: true,
   allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowHeaders: ["Content-Type", "Authorization", "x-oishi-wallet", "x-oishi-signature", "x-oishi-message"],
   exposeHeaders: [],
   maxAge: 86400,
 }));
 
-// ── Routes (agentRunRouter first: its _scheduler route must beat agentsRouter's :id) ─
+// ── Routes ──────────────────────────────────────────────────────────────────
 app.route("/api/health", healthRouter);
 app.route("/api/lifi", lifiRouter);
 app.route("/api/auth", authRouter);
@@ -35,46 +38,29 @@ app.route("/api/onchain", onchainRouter);
 app.route("/api/agents", agentRunRouter);
 app.route("/api/agents", agentsRouter);
 
-// ── Root ───────────────────────────────────────────────────────────────
-app.get("/", (c) =>
-  c.json({
-    name: "Oishi Agent Backend",
-    version: "1.0.0",
-    docs: "/api/health",
-    endpoints: {
-      auth: "/api/auth/login",
-      onchain: "/api/onchain/register-agent/:id",
-      lifiQuote: "/api/lifi/quote",
-      agents: "/api/agents",
-      run: "/api/agents/:id/run",
-      chat: "/api/agents/:id/chat",
-      context: "/api/agents/:id/context",
-      decisions: "/api/agents/:id/decisions",
-      skills: "/api/agents/:id/skills",
-      strategies: "/api/agents/_strategies",
-      scheduler: "/api/agents/_scheduler",
-    },
-  }),
-);
-
-// Load agents from Supabase (if configured) then start scheduler — runs on Vercel cold start too
-void loadFromSupabase().then(() => {
-  startScheduler();
+// ── Debug endpoint ─────────────────────────────────────────────────────────
+app.get("/api/debug/llm", async (c) => {
+  const info = getLlmDebugInfo();
+  return c.json(info);
 });
 
-// Vercel runs via api/[[...route]].ts + @hono/node-server/vercel handle. Local uses Node server.
-export default app;
+// ── Startup ─────────────────────────────────────────────────────────────────
+const PORT = parseInt(process.env.PORT ?? "3000");
+const isProduction = process.env.RAILWAY_ENVIRONMENT !== undefined;
 
-// Bun auto-serves `export default app`. Only manually serve for Node/tsx runtime.
-// @ts-expect-error — Bun is a global in Bun runtime
-const isBun = typeof Bun !== "undefined";
-if (!isBun && !process.env.VERCEL) {
-  const port = parseInt(process.env.PORT ?? "3001", 10);
-  serve({ fetch: app.fetch, port }, (info) => {
-    logger.info(`Oishi Agent Backend running on http://localhost:${info.port}`);
-    logger.info(`LLM: ${getLlmDebugInfo()}`);
-    logger.info(
-      `Scheduler: waking active agents every ${parseInt(process.env.AGENT_CYCLE_MS ?? "60000", 10) / 1000}s`,
-    );
-  });
+// Load agents on startup
+loadFromSupabase().then((agents) => {
+  logger.info(`Loaded ${agents.length} agents from Supabase`);
+});
+
+// Start scheduler in production
+if (isProduction) {
+  startScheduler();
+  logger.info("Scheduler started");
 }
+
+console.log(`🚀 Server starting on port ${PORT}`);
+serve({
+  fetch: app.fetch,
+  port: PORT,
+});
