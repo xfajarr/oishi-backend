@@ -10,26 +10,32 @@ import {
 } from "../services/agent-store";
 import { initContext } from "../services/context-store";
 import { buildSystemPrompt } from "../llm/prompts";
-import { CreateAgentSchema, UpdateRulesSchema, STRATEGY_CONFIG } from "../models/agent";
+import {
+  CreateAgentSchema,
+  UpdateRulesSchema,
+  STRATEGY_CONFIG,
+  STRATEGY_IDS,
+} from "../models/agent";
 import { createLogger } from "../lib/logger";
 import { requireAuth } from "../services/auth";
+import type { OishiEnv } from "../types/hono-env";
 
 const log = createLogger("agents");
 
-export const agentsRouter = new Hono();
+export const agentsRouter = new Hono<OishiEnv>();
 
 // ── PUBLIC: List all strategies ────────────────────────────────────────
 agentsRouter.get("/_strategies", (c) => {
-  const strategies = Object.entries(STRATEGY_CONFIG).map(([id, config]) => ({
+  const strategies = STRATEGY_IDS.map((id) => ({
     id,
-    ...config,
+    ...STRATEGY_CONFIG[id],
   }));
   return c.json({ strategies });
 });
 
 // ── Create agent ───────────────────────────────────────────────────────
 agentsRouter.post("/", requireAuth(), async (c) => {
-  const wallet = (c as Record<string, unknown>).wallet as string;
+  const wallet = c.get("wallet");
   const body = await c.req.json();
 
   const parsed = CreateAgentSchema.safeParse(body);
@@ -61,14 +67,14 @@ agentsRouter.post("/", requireAuth(), async (c) => {
 
 // ── List user's agents ─────────────────────────────────────────────────
 agentsRouter.get("/", requireAuth(), (c) => {
-  const wallet = (c as Record<string, unknown>).wallet as string;
+  const wallet = c.get("wallet");
   const agents = getAgentsByOwner(wallet);
   return c.json({ agents, count: agents.length });
 });
 
 // ── Get agent by ID ────────────────────────────────────────────────────
 agentsRouter.get("/:id", requireAuth(), (c) => {
-  const wallet = (c as Record<string, unknown>).wallet as string;
+  const wallet = c.get("wallet");
   const id = c.req.param("id");
   const agent = getAgent(id);
 
@@ -80,7 +86,7 @@ agentsRouter.get("/:id", requireAuth(), (c) => {
 
 // ── Update agent rules ─────────────────────────────────────────────────
 agentsRouter.put("/:id/rules", requireAuth(), async (c) => {
-  const wallet = (c as Record<string, unknown>).wallet as string;
+  const wallet = c.get("wallet");
   const id = c.req.param("id");
   const agent = getAgent(id);
 
@@ -99,7 +105,7 @@ agentsRouter.put("/:id/rules", requireAuth(), async (c) => {
 
 // ── Pause agent ────────────────────────────────────────────────────────
 agentsRouter.post("/:id/pause", requireAuth(), (c) => {
-  const wallet = (c as Record<string, unknown>).wallet as string;
+  const wallet = c.get("wallet");
   const id = c.req.param("id");
   const agent = getAgent(id);
 
@@ -112,7 +118,7 @@ agentsRouter.post("/:id/pause", requireAuth(), (c) => {
 
 // ── Resume agent ───────────────────────────────────────────────────────
 agentsRouter.post("/:id/resume", requireAuth(), (c) => {
-  const wallet = (c as Record<string, unknown>).wallet as string;
+  const wallet = c.get("wallet");
   const id = c.req.param("id");
   const agent = getAgent(id);
 
@@ -125,7 +131,7 @@ agentsRouter.post("/:id/resume", requireAuth(), (c) => {
 
 // ── Withdraw / stop agent ──────────────────────────────────────────────
 agentsRouter.delete("/:id", requireAuth(), (c) => {
-  const wallet = (c as Record<string, unknown>).wallet as string;
+  const wallet = c.get("wallet");
   const id = c.req.param("id");
   const agent = getAgent(id);
 

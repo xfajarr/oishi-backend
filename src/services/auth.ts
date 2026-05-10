@@ -1,7 +1,9 @@
 import nacl from "tweetnacl";
 import bs58 from "bs58";
-import { verifyToken, extractBearerToken } from "./jwt";
-import { createLogger } from "../lib/logger";
+import type { MiddlewareHandler } from "hono";
+import { verifyToken, extractBearerToken } from "./jwt.js";
+import { createLogger } from "../lib/logger.js";
+import type { OishiEnv } from "../types/hono-env.js";
 
 const log = createLogger("auth");
 const DEV_MODE = process.env.OISHI_DEV_MODE === "1";
@@ -41,14 +43,8 @@ export function extractAuth(headers: { get: (name: string) => string | undefined
 }
 
 // ── Hono middleware — supports Bearer token OR wallet signature ──────────
-export function requireAuth() {
-  return async function authMiddleware(
-    c: {
-      req: { header: (n: string) => string | undefined };
-      json: (body: unknown, status: number) => Response;
-    },
-    next: () => Promise<void>,
-  ) {
+export function requireAuth(): MiddlewareHandler<OishiEnv> {
+  return async function authMiddleware(c, next) {
     // 1. Try Bearer token first (persistent session)
     const authHeader = c.req.header("Authorization");
     const token = extractBearerToken(authHeader);
@@ -56,7 +52,7 @@ export function requireAuth() {
     if (token) {
       const payload = await verifyToken(token);
       if (payload) {
-        (c as Record<string, unknown>).wallet = payload.wallet;
+        c.set("wallet", payload.wallet);
         await next();
         return;
       }
@@ -95,7 +91,7 @@ export function requireAuth() {
       }
     }
 
-    (c as Record<string, unknown>).wallet = auth.wallet;
+    c.set("wallet", auth.wallet);
     await next();
   };
 }

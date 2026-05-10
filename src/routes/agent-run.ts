@@ -6,8 +6,9 @@ import { getSkillsForStrategy } from "../models/skill";
 import { triggerAgentNow, getSchedulerStats } from "../services/scheduler";
 import { requireAuth } from "../services/auth";
 import { runAgentChat } from "../llm/agent-loop";
+import type { OishiEnv } from "../types/hono-env";
 
-export const agentRunRouter = new Hono();
+export const agentRunRouter = new Hono<OishiEnv>();
 
 // ── PUBLIC: Scheduler status ───────────────────────────────────────────
 agentRunRouter.get("/_scheduler", (c) => {
@@ -21,7 +22,7 @@ const chatBodySchema = z.object({
 
 // ── Chat (LLM turn from app) — register before generic :id routes if needed ──
 agentRunRouter.post("/:id/chat", requireAuth(), async (c) => {
-  const wallet = (c as Record<string, unknown>).wallet as string;
+  const wallet = c.get("wallet");
   const id = c.req.param("id");
   const agent = getAgent(id);
 
@@ -45,7 +46,7 @@ agentRunRouter.post("/:id/chat", requireAuth(), async (c) => {
 
 // ── Force-trigger agent cycle ──────────────────────────────────────────
 agentRunRouter.post("/:id/run", requireAuth(), async (c) => {
-  const wallet = (c as Record<string, unknown>).wallet as string;
+  const wallet = c.get("wallet");
   const id = c.req.param("id");
   const agent = getAgent(id);
 
@@ -59,7 +60,7 @@ agentRunRouter.post("/:id/run", requireAuth(), async (c) => {
 
 // ── Get agent context (memory) ─────────────────────────────────────────
 agentRunRouter.get("/:id/context", requireAuth(), (c) => {
-  const wallet = (c as Record<string, unknown>).wallet as string;
+  const wallet = c.get("wallet");
   const id = c.req.param("id");
   const agent = getAgent(id);
 
@@ -82,7 +83,7 @@ agentRunRouter.get("/:id/context", requireAuth(), (c) => {
 
 // ── Get agent decisions (activity log) ─────────────────────────────────
 agentRunRouter.get("/:id/decisions", requireAuth(), (c) => {
-  const wallet = (c as Record<string, unknown>).wallet as string;
+  const wallet = c.get("wallet");
   const id = c.req.param("id");
   const agent = getAgent(id);
 
@@ -100,7 +101,7 @@ agentRunRouter.get("/:id/decisions", requireAuth(), (c) => {
 
 // ── Get agent skills ───────────────────────────────────────────────────
 agentRunRouter.get("/:id/skills", requireAuth(), (c) => {
-  const wallet = (c as Record<string, unknown>).wallet as string;
+  const wallet = c.get("wallet");
   const id = c.req.param("id");
   const agent = getAgent(id);
 
