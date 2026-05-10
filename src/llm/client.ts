@@ -22,24 +22,41 @@ const client = new OpenAI({
 });
 
 function formatLlmFailure(err: unknown): string {
-  const hint =
-    "Fix: set LLM_BASE_URL to an OpenAI-compatible root ending in /v1, set a valid LLM_API_KEY and LLM_MODEL. If the provider rejects tool calling, set LLM_DISABLE_TOOLS=1.";
-
   if (err instanceof APIError) {
-    const parts = [`HTTP ${err.status}`, err.message];
-    if (err.code) parts.push(`code=${err.code}`);
-    if (err.param) parts.push(`param=${err.param}`);
-    if (err.type) parts.push(`type=${err.type}`);
-    if (err.requestID) parts.push(`request_id=${err.requestID}`);
-    if (err.message.includes("no body")) {
-      parts.push(
-        "The server returned an error with no JSON body (often wrong base URL, blocked request, or incompatible gateway).",
-      );
+    // Try to extract a useful message from raw response body
+    let bodyMessage = "";
+    try {
+      // @ts-expect-error — raw body may exist
+      const raw = err.response?.body ?? err.message;
+      if (typeof raw === "string" && raw.length > 0 && raw.length < 2000) {
+        const parsed = JSON.parse(raw);
+        bodyMessage = parsed.message ?? parsed.error ?? parsed.detail ?? "";
+      }
+    } catch { /* not JSON */ }
+
+    const parts = [`HTTP ${err.status}`];
+
+    if (bodyMessage) {
+      parts.push(bodyMessage);
+    } else if (err.message && err.message !== "400 status code (no body)") {
+      parts.push(err.message);
     }
-    parts.push(hint);
+
+    if (err.status === 400 && !bodyMessage) {
+      parts.push("Check your LLM_BASE_URL, LLM_API_KEY, and LLM_MODEL. The provider rejected the request.");
+    }
+
+    if (err.status === 401 || err.status === 403) {
+      parts.push("API key invalid or lacks permissions.");
+    }
+
+    if (err.status === 429 || (bodyMessage && /rate limit|quota|credit/i.test(bodyMessage))) {
+      parts.push("Rate limit hit or account out of credits. Top up your LLM provider account.");
+    }
+
     return parts.join(" · ");
   }
-  return `${String(err)} · ${hint}`;
+  return String(err);
 }
 
 /** For startup logs (uses normalized base URL). */
@@ -107,6 +124,7 @@ export async function callLlm(params: LlmCallParams): Promise<LlmResponse> {
       tool_choice: openaiTools.length > 0 ? "auto" : undefined,
       temperature: 0.4,
       max_tokens: 1000,
+      parallel_tool_calls: false,
     });
   } catch (err) {
     throw new Error(formatLlmFailure(err));

@@ -9,6 +9,7 @@ export interface AgentSkill {
   toolDefinition: {
     type: "function";
     function: {
+        "strict": true,
       name: string;
       description: string;
       parameters: Record<string, unknown>;
@@ -34,6 +35,7 @@ const BASE_SKILLS: AgentSkill[] = [
     toolDefinition: {
       type: "function",
       function: {
+        "strict": true,
         name: "check_balance",
         description: "Get the current SOL and USDC balance of the agent wallet",
         parameters: { type: "object", properties: {}, required: [] },
@@ -48,6 +50,7 @@ const BASE_SKILLS: AgentSkill[] = [
     toolDefinition: {
       type: "function",
       function: {
+        "strict": true,
         name: "wait",
         description: "Take no action this cycle. Use when market conditions aren't favorable or you're waiting.",
         parameters: {
@@ -73,6 +76,7 @@ const STRATEGY_SKILLS: Record<StrategyId, AgentSkill[]> = {
       toolDefinition: {
         type: "function",
         function: {
+        "strict": true,
           name: "check_yield_vaults",
           description: "Query available Kamino yield vaults and their current APY rates",
           parameters: {
@@ -92,6 +96,7 @@ const STRATEGY_SKILLS: Record<StrategyId, AgentSkill[]> = {
       toolDefinition: {
         type: "function",
         function: {
+        "strict": true,
           name: "deposit_to_kamino",
           description: "Deposit a specified amount of USDC into a Kamino yield vault",
           parameters: {
@@ -113,6 +118,7 @@ const STRATEGY_SKILLS: Record<StrategyId, AgentSkill[]> = {
       toolDefinition: {
         type: "function",
         function: {
+        "strict": true,
           name: "compound_rewards",
           description: "Harvest pending rewards and re-deposit (compound) them",
           parameters: {
@@ -136,6 +142,7 @@ const STRATEGY_SKILLS: Record<StrategyId, AgentSkill[]> = {
       toolDefinition: {
         type: "function",
         function: {
+        "strict": true,
           name: "check_positions",
           description: "List current open perpetual positions on Drift protocol",
           parameters: { type: "object", properties: {}, required: [] },
@@ -150,6 +157,7 @@ const STRATEGY_SKILLS: Record<StrategyId, AgentSkill[]> = {
       toolDefinition: {
         type: "function",
         function: {
+        "strict": true,
           name: "open_perp_trade",
           description: "Open a new perpetual futures position on Drift",
           parameters: {
@@ -173,6 +181,7 @@ const STRATEGY_SKILLS: Record<StrategyId, AgentSkill[]> = {
       toolDefinition: {
         type: "function",
         function: {
+        "strict": true,
           name: "close_position",
           description: "Close an open perpetual position on Drift",
           parameters: {
@@ -196,6 +205,7 @@ const STRATEGY_SKILLS: Record<StrategyId, AgentSkill[]> = {
       toolDefinition: {
         type: "function",
         function: {
+        "strict": true,
           name: "search_markets",
           description: "Search for active prediction markets on Polymarket",
           parameters: {
@@ -216,6 +226,7 @@ const STRATEGY_SKILLS: Record<StrategyId, AgentSkill[]> = {
       toolDefinition: {
         type: "function",
         function: {
+        "strict": true,
           name: "place_bet",
           description: "Place a bet on a Polymarket prediction market",
           parameters: {
@@ -241,6 +252,7 @@ const STRATEGY_SKILLS: Record<StrategyId, AgentSkill[]> = {
       toolDefinition: {
         type: "function",
         function: {
+        "strict": true,
           name: "get_swap_quote",
           description: "Get the best swap route and price quote from Jupiter aggregator",
           parameters: {
@@ -263,6 +275,7 @@ const STRATEGY_SKILLS: Record<StrategyId, AgentSkill[]> = {
       toolDefinition: {
         type: "function",
         function: {
+        "strict": true,
           name: "execute_dca_buy",
           description: "Execute a scheduled DCA (dollar-cost average) buy order on Jupiter",
           parameters: {
@@ -287,6 +300,7 @@ const STRATEGY_SKILLS: Record<StrategyId, AgentSkill[]> = {
       toolDefinition: {
         type: "function",
         function: {
+        "strict": true,
           name: "check_pools",
           description: "Check Meteora DLMM pool status, current price, and optimal ranges",
           parameters: {
@@ -306,6 +320,7 @@ const STRATEGY_SKILLS: Record<StrategyId, AgentSkill[]> = {
       toolDefinition: {
         type: "function",
         function: {
+        "strict": true,
           name: "rebalance_lp",
           description: "Rebalance a Meteora DLMM liquidity position to the current optimal price range",
           parameters: {
@@ -329,6 +344,7 @@ const STRATEGY_SKILLS: Record<StrategyId, AgentSkill[]> = {
       toolDefinition: {
         type: "function",
         function: {
+        "strict": true,
           name: "check_lst_rates",
           description: "Check current liquid staking token APY rates on Sanctum",
           parameters: { type: "object", properties: {}, required: [] },
@@ -343,6 +359,7 @@ const STRATEGY_SKILLS: Record<StrategyId, AgentSkill[]> = {
       toolDefinition: {
         type: "function",
         function: {
+        "strict": true,
           name: "stake_sol",
           description: "Stake SOL into a liquid staking token on Sanctum",
           parameters: {
@@ -367,6 +384,7 @@ const STRATEGY_SKILLS: Record<StrategyId, AgentSkill[]> = {
       toolDefinition: {
         type: "function",
         function: {
+        "strict": true,
           name: "check_raydium_pools",
           description: "Check Raydium AMM/CLMM pool status, TVL, and current yields",
           parameters: {
@@ -386,6 +404,7 @@ const STRATEGY_SKILLS: Record<StrategyId, AgentSkill[]> = {
       toolDefinition: {
         type: "function",
         function: {
+        "strict": true,
           name: "provide_liquidity",
           description: "Provide liquidity to a Raydium pool",
           parameters: {
@@ -411,6 +430,7 @@ const STRATEGY_SKILLS: Record<StrategyId, AgentSkill[]> = {
       toolDefinition: {
         type: "function",
         function: {
+        "strict": true,
           name: "check_lending",
           description: "Check marginfi lending and borrowing rates",
           parameters: { type: "object", properties: {}, required: [] },
@@ -425,6 +445,7 @@ const STRATEGY_SKILLS: Record<StrategyId, AgentSkill[]> = {
       toolDefinition: {
         type: "function",
         function: {
+        "strict": true,
           name: "supply_collateral",
           description: "Supply collateral to marginfi",
           parameters: {
