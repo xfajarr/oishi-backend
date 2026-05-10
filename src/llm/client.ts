@@ -27,35 +27,42 @@ const client = new OpenAI({
 
 function formatLlmFailure(err: unknown): string {
   if (err instanceof APIError) {
-    // Try to extract a useful message from raw response body
+    const parts = [`HTTP ${err.status}`];
+
+    // Try multiple places the provider's error message might be
     let bodyMessage = "";
     try {
-      // @ts-expect-error — raw body may exist
-      const raw = err.response?.body ?? err.message;
-      if (typeof raw === "string" && raw.length > 0 && raw.length < 2000) {
+      // OpenAI SDK v6: raw response body
+      const raw = (err as any).request_id ? null : err.message;
+      // Some non-OpenAI providers put the error in err.message itself as JSON
+      if (typeof raw === "string" && raw.length > 0) {
         const parsed = JSON.parse(raw);
         bodyMessage = parsed.message ?? parsed.error ?? parsed.detail ?? "";
       }
-    } catch { /* not JSON */ }
+    } catch {
+      // Also try err.error (OpenAI format)
+      try {
+        bodyMessage = (err as any).error?.message ?? "";
+      } catch {}
+    }
 
-    const parts = [`HTTP ${err.status}`];
+    // Also try the raw err.message if it's not the generic "400 status code (no body)"
+    if (!bodyMessage && err.message && err.message !== "400 status code (no body)") {
+      bodyMessage = err.message;
+    }
 
     if (bodyMessage) {
       parts.push(bodyMessage);
-    } else if (err.message && err.message !== "400 status code (no body)") {
-      parts.push(err.message);
-    }
-
-    if (err.status === 400 && !bodyMessage) {
-      parts.push("Check your LLM_BASE_URL, LLM_API_KEY, and LLM_MODEL. The provider rejected the request.");
+    } else if (err.status === 400) {
+      parts.push("Provider rejected the request — check LLM_MODEL, LLM_API_KEY, and LLM_BASE_URL");
     }
 
     if (err.status === 401 || err.status === 403) {
-      parts.push("API key invalid or lacks permissions.");
+      parts.push("API key invalid or lacks permissions");
     }
 
-    if (err.status === 429 || (bodyMessage && /rate limit|quota|credit/i.test(bodyMessage))) {
-      parts.push("Rate limit hit or account out of credits. Top up your LLM provider account.");
+    if (err.status === 429 || /rate limit|quota|credit|topup/i.test(bodyMessage)) {
+      parts.push("Rate limit or credits exhausted — top up your provider account");
     }
 
     return parts.join(" · ");

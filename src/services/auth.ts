@@ -1,4 +1,4 @@
-import nacl from "tweetnacl";
+import * as ed from "@noble/ed25519";
 import bs58 from "bs58";
 import type { MiddlewareHandler } from "hono";
 import { verifyToken, extractBearerToken } from "./jwt.js";
@@ -16,13 +16,13 @@ export interface AuthPayload {
 }
 
 // ── Wallet signature verification ───────────────────────────────────────
-export function verifyWalletSignature(payload: AuthPayload): boolean {
+export async function verifyWalletSignature(payload: AuthPayload): Promise<boolean> {
   if (DEV_MODE) return true;
   try {
     const publicKeyBytes = bs58.decode(payload.wallet);
     const signatureBytes = bs58.decode(payload.signature);
     const messageBytes = new TextEncoder().encode(payload.message);
-    return nacl.sign.detached.verify(messageBytes, signatureBytes, publicKeyBytes);
+    return await ed.verifyAsync(signatureBytes, messageBytes, publicKeyBytes);
   } catch {
     return false;
   }
@@ -75,7 +75,7 @@ export function requireAuth(): MiddlewareHandler<OishiEnv> {
       );
     }
 
-    if (!verifyWalletSignature(auth)) {
+    if (!await verifyWalletSignature(auth)) {
       return c.json({ error: "Invalid wallet signature" }, 401);
     }
 

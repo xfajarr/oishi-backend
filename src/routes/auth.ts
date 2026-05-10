@@ -26,7 +26,7 @@ authRouter.post("/login", async (c) => {
 
   const auth = { wallet, signature, message };
 
-  if (!verifyWalletSignature(auth)) {
+  if (!await verifyWalletSignature(auth)) {
     return c.json({ error: "Invalid wallet signature" }, 401);
   }
 
