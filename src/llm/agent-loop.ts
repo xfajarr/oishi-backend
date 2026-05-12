@@ -37,6 +37,8 @@ export async function runAgentCycle(agentId: string): Promise<{
       agent.commonRules,
       agent.specificRules,
       { solBalance: 0, usdcBalance: 0, dailySpent: 0 },
+      agent.displayName,
+      agent.handle,
     );
     context = initContext(agentId, prompt);
   }
@@ -116,10 +118,10 @@ export async function runAgentCycle(agentId: string): Promise<{
       status = "blocked";
     } else {
       // 5b. EXECUTE ────────────────────────────────────────────────────
-      const execution = executeToolCall(tc.name, tc.arguments, {
+      const execution = await executeToolCall(tc.name, tc.arguments, {
         solBalance: context.state.solBalance,
         usdcBalance: context.state.usdcBalance,
-      });
+      }, agent.walletPublicKey);
 
       result = execution.result;
       status = "executed";
@@ -221,6 +223,8 @@ export async function runAgentChat(agentId: string, userText: string): Promise<{
       agent.commonRules,
       agent.specificRules,
       { solBalance: 0, usdcBalance: 0, dailySpent: 0 },
+      agent.displayName,
+      agent.handle,
     );
     context = initContext(agentId, prompt);
   }
@@ -296,10 +300,10 @@ export async function runAgentChat(agentId: string, userText: string): Promise<{
       result = `BLOCKED: ${policy.reason}`;
       status = "blocked";
     } else {
-      const execution = executeToolCall(tc.name, tc.arguments, {
+      const execution = await executeToolCall(tc.name, tc.arguments, {
         solBalance: context.state.solBalance,
         usdcBalance: context.state.usdcBalance,
-      });
+      }, agent.walletPublicKey);
 
       result = execution.result;
       status = "executed";

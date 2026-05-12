@@ -5,6 +5,7 @@ import { getContext } from "../services/context-store.js";
 import { getSkillsForStrategy } from "../models/skill.js";
 import { triggerAgentNow, getSchedulerStats } from "../services/scheduler.js";
 import { requireAuth } from "../services/auth.js";
+import { ok, badRequest, notFound, forbidden, serverError } from "../lib/response.js";
 import { runAgentChat } from "../llm/agent-loop.js";
 import type { OishiEnv } from "../types/hono-env.js";
 
@@ -26,8 +27,8 @@ agentRunRouter.post("/:id/chat", requireAuth(), async (c) => {
   const id = c.req.param("id");
   const agent = getAgent(id);
 
-  if (!agent) return c.json({ error: "Agent not found" }, 404);
-  if (agent.owner !== wallet) return c.json({ error: "Not your agent" }, 403);
+  if (!agent) return notFound("Agent not found");
+  if (agent.owner !== wallet) return forbidden("Not your agent");
 
   let body: z.infer<typeof chatBodySchema>;
   try {
@@ -50,8 +51,8 @@ agentRunRouter.post("/:id/run", requireAuth(), async (c) => {
   const id = c.req.param("id");
   const agent = getAgent(id);
 
-  if (!agent) return c.json({ error: "Agent not found" }, 404);
-  if (agent.owner !== wallet) return c.json({ error: "Not your agent" }, 403);
+  if (!agent) return notFound("Agent not found");
+  if (agent.owner !== wallet) return forbidden("Not your agent");
   if (agent.status !== "active") return c.json({ error: `Agent is ${agent.status} — resume it first` }, 400);
 
   const result = await triggerAgentNow(id);
@@ -64,8 +65,8 @@ agentRunRouter.get("/:id/context", requireAuth(), (c) => {
   const id = c.req.param("id");
   const agent = getAgent(id);
 
-  if (!agent) return c.json({ error: "Agent not found" }, 404);
-  if (agent.owner !== wallet) return c.json({ error: "Not your agent" }, 403);
+  if (!agent) return notFound("Agent not found");
+  if (agent.owner !== wallet) return forbidden("Not your agent");
 
   const context = getContext(id);
   if (!context) return c.json({ error: "No context initialized" }, 404);
@@ -87,8 +88,8 @@ agentRunRouter.get("/:id/decisions", requireAuth(), (c) => {
   const id = c.req.param("id");
   const agent = getAgent(id);
 
-  if (!agent) return c.json({ error: "Agent not found" }, 404);
-  if (agent.owner !== wallet) return c.json({ error: "Not your agent" }, 403);
+  if (!agent) return notFound("Agent not found");
+  if (agent.owner !== wallet) return forbidden("Not your agent");
 
   const context = getContext(id);
   if (!context) return c.json({ error: "No context initialized" }, 404);
@@ -105,8 +106,8 @@ agentRunRouter.get("/:id/skills", requireAuth(), (c) => {
   const id = c.req.param("id");
   const agent = getAgent(id);
 
-  if (!agent) return c.json({ error: "Agent not found" }, 404);
-  if (agent.owner !== wallet) return c.json({ error: "Not your agent" }, 403);
+  if (!agent) return notFound("Agent not found");
+  if (agent.owner !== wallet) return forbidden("Not your agent");
 
   const skills = getSkillsForStrategy(agent.strategyId);
   return c.json({ skills, strategyId: agent.strategyId });

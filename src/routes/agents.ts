@@ -2,6 +2,7 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { Hono } from "hono";
 import {
   createAgent,
+  createDraftAgent,
   getAgent,
   getAgentsByOwner,
   getAllAgents,
@@ -9,7 +10,7 @@ import {
   updateAgentStatus,
   deleteAgent,
 } from "../services/agent-store.js";
-import { initContext } from "../services/context-store.js";
+import { initContext, deleteContext } from "../services/context-store.js";
 import { buildSystemPrompt } from "../llm/prompts.js";
 import {
   CreateAgentSchema,
@@ -18,6 +19,9 @@ import {
   STRATEGY_IDS,
 } from "../models/agent.js";
 import { createLogger } from "../lib/logger.js";
+import { buildRegisterAgentTx, buildStrategyMask } from "../solana/registry.js";
+import { registerMetaplexIdentity } from "../solana/metaplex-register.js";
+import { verifyAgentPayment } from "../services/payment.js";
 import { requireAuth } from "../services/auth.js";
 import type { OishiEnv } from "../types/hono-env.js";
 
@@ -50,7 +54,7 @@ agentsRouter.post("/", requireAuth(), async (c) => {
     return c.json({ error: "Handle already taken" }, 409);
   }
 
-  const agent = createAgent(wallet, parsed.data);
+  const agent = createDraftAgent(wallet, parsed.data);
 
   // Initialize context with strategy-specific system prompt
   const prompt = buildSystemPrompt(
@@ -58,6 +62,8 @@ agentsRouter.post("/", requireAuth(), async (c) => {
     agent.commonRules,
     agent.specificRules,
     { solBalance: 0, usdcBalance: 0, dailySpent: 0 },
+    agent.displayName,
+    agent.handle,
   );
   initContext(agent.id, prompt);
 
@@ -81,6 +87,11 @@ agentsRouter.get("/:id", requireAuth(), (c) => {
 
   if (!agent) return c.json({ error: "Agent not found" }, 404);
   if (agent.owner !== wallet) return c.json({ error: "Not your agent" }, 403);
+  if (agent.status === "draft" || agent.status === "stopped") {
+    deleteAgent(id);
+    deleteContext(id);
+    return c.json({ deleted: true });
+  }
 
   return c.json({ agent });
 });
@@ -93,6 +104,11 @@ agentsRouter.put("/:id/rules", requireAuth(), async (c) => {
 
   if (!agent) return c.json({ error: "Agent not found" }, 404);
   if (agent.owner !== wallet) return c.json({ error: "Not your agent" }, 403);
+  if (agent.status === "draft" || agent.status === "stopped") {
+    deleteAgent(id);
+    deleteContext(id);
+    return c.json({ deleted: true });
+  }
 
   const body = await c.req.json();
   const parsed = UpdateRulesSchema.safeParse(body);
@@ -112,6 +128,11 @@ agentsRouter.post("/:id/pause", requireAuth(), (c) => {
 
   if (!agent) return c.json({ error: "Agent not found" }, 404);
   if (agent.owner !== wallet) return c.json({ error: "Not your agent" }, 403);
+  if (agent.status === "draft" || agent.status === "stopped") {
+    deleteAgent(id);
+    deleteContext(id);
+    return c.json({ deleted: true });
+  }
 
   const updated = updateAgentStatus(id, "paused");
   return c.json({ agent: updated });
@@ -125,6 +146,11 @@ agentsRouter.post("/:id/resume", requireAuth(), (c) => {
 
   if (!agent) return c.json({ error: "Agent not found" }, 404);
   if (agent.owner !== wallet) return c.json({ error: "Not your agent" }, 403);
+  if (agent.status === "draft" || agent.status === "stopped") {
+    deleteAgent(id);
+    deleteContext(id);
+    return c.json({ deleted: true });
+  }
 
   const updated = updateAgentStatus(id, "active");
   return c.json({ agent: updated });
@@ -138,6 +164,11 @@ agentsRouter.get("/:id/balance", requireAuth(), async (c) => {
 
   if (!agent) return c.json({ error: "Agent not found" }, 404);
   if (agent.owner !== wallet) return c.json({ error: "Not your agent" }, 403);
+  if (agent.status === "draft" || agent.status === "stopped") {
+    deleteAgent(id);
+    deleteContext(id);
+    return c.json({ deleted: true });
+  }
 
   try {
     const rpc = process.env.SOLANA_RPC_URL ?? "https://api.devnet.solana.com";
@@ -167,6 +198,11 @@ agentsRouter.delete("/:id", requireAuth(), (c) => {
 
   if (!agent) return c.json({ error: "Agent not found" }, 404);
   if (agent.owner !== wallet) return c.json({ error: "Not your agent" }, 403);
+  if (agent.status === "draft" || agent.status === "stopped") {
+    deleteAgent(id);
+    deleteContext(id);
+    return c.json({ deleted: true });
+  }
 
   updateAgentStatus(id, "stopped");
   return c.json({ success: true });

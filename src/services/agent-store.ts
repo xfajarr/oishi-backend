@@ -123,6 +123,54 @@ export function createAgent(
   return agent;
 }
 
+export function createDraftAgent(
+  owner: string,
+  input: CreateAgentInput,
+): Agent {
+  const id = uuid();
+  const now = Date.now();
+  const specificDefaults = DEFAULT_SPECIFIC[input.strategyId] ?? {};
+
+  const agent: Agent = {
+    id, owner, handle: input.handle, displayName: input.displayName,
+    strategyId: input.strategyId,
+    commonRules: { ...defaultCommonRules, ...input.commonRules },
+    specificRules: { ...specificDefaults, ...input.specificRules },
+    status: "draft",
+    kyaIdentityPda: null,
+    kyaReputationScore: 0, attestationCount: 0,
+    totalEarnings: 0, totalTxCount: 0, cycleCount: 0,
+    walletPublicKey: "",
+    createdAt: now, updatedAt: now, lastActiveAt: null,
+  };
+
+  if (isSupabaseReady() && supabase) {
+    supabase.from("agents").insert({ id, ...agentToRow(agent), created_at: new Date(now).toISOString(), updated_at: new Date(now).toISOString() }).then(() => {});
+  }
+  agents.set(id, agent);
+  if (!isSupabaseReady()) saveToFile();
+  return agent;
+}
+
+export function upgradeDraftWithOnChain(
+  id: string, walletPublicKey: string, kyaIdentityPda: string,
+): Agent | null {
+  const agent = agents.get(id);
+  if (!agent) return null;
+  if (agent.status !== "draft") return null;
+  agent.status = "active";
+  agent.walletPublicKey = walletPublicKey;
+  agent.kyaIdentityPda = kyaIdentityPda;
+  agent.updatedAt = Date.now();
+  agent.lastActiveAt = Date.now();
+  if (isSupabaseReady() && supabase) {
+    supabase.from("agents").update({ status: "active", wallet_public_key: walletPublicKey, kya_identity_pda: kyaIdentityPda, updated_at: new Date().toISOString(), last_active_at: new Date().toISOString() }).eq("id", id).then(() => {});
+  }
+  agents.set(id, agent);
+  if (!isSupabaseReady()) saveToFile();
+  return agent;
+}
+
 export function getAgent(id: string): Agent | undefined {
   return agents.get(id);
 }
@@ -205,6 +253,15 @@ export async function loadFromSupabase(): Promise<Agent[]> {
 
 export function persistAll() {
   if (!isSupabaseReady()) saveToFile();
+}
+
+export function markAgentPaid(id: string, amountSol: number): Agent | null {
+  const agent = agents.get(id);
+  if (!agent) return null;
+  agent.updatedAt = Date.now();
+  agents.set(id, agent);
+  if (!isSupabaseReady()) saveToFile();
+  return agent;
 }
 
 export function deleteAgent(id: string): boolean {

@@ -56,7 +56,7 @@ export const DEFAULT_SPECIFIC: Record<StrategyId, SpecificRules> = {
 };
 
 // ── Agent status ───────────────────────────────────────────────────────
-export const AGENT_STATUSES = ["active", "paused", "stopped", "blocked"] as const;
+export const AGENT_STATUSES = ["draft", "active", "paused", "stopped", "blocked"] as const;
 export type AgentStatus = (typeof AGENT_STATUSES)[number];
 
 // ── Agent record ───────────────────────────────────────────────────────
