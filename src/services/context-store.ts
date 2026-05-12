@@ -10,7 +10,7 @@ import { createDefaultContext } from "../models/context.js";
 
 const log = createLogger("context-store");
 
-const DATA_DIR = join(import.meta.dirname, "..", "data");
+const DATA_DIR = join((typeof __dirname !== "undefined" ? __dirname : (typeof import.meta !== "undefined" && import.meta.dirname ? import.meta.dirname : ".")), "..", "data");
 const CONTEXTS_FILE = join(DATA_DIR, "contexts.json");
 const contexts = new Map<string, AgentContext>();
 

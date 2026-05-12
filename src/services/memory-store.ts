@@ -17,7 +17,7 @@ import {
 
 const log = createLogger("memory-store");
 
-const DATA_DIR = join(import.meta.dirname, "..", "data");
+const DATA_DIR = join((typeof __dirname !== "undefined" ? __dirname : (typeof import.meta !== "undefined" && import.meta.dirname ? import.meta.dirname : ".")), "..", "data");
 const MEMORY_FILE = join(DATA_DIR, "memory.json");
 const memories = new Map<string, MemoryState>();
 

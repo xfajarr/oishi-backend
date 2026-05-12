@@ -19,7 +19,7 @@ import { DEFAULT_SPECIFIC, defaultCommonRules } from "../models/agent.js";
 
 const log = createLogger("agent-store");
 
-const DATA_DIR = join(import.meta.dirname, "..", "data");
+const DATA_DIR = join((typeof __dirname !== "undefined" ? __dirname : (typeof import.meta !== "undefined" && import.meta.dirname ? import.meta.dirname : ".")), "..", "data");
 const AGENTS_FILE = join(DATA_DIR, "agents.json");
 const agents = new Map<string, Agent>();
 
