@@ -13,6 +13,6 @@
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx"
   },
-  "include": ["src/**/*.ts", "api/**/*.ts", "api/**/*.d.ts"],
+  "include": ["src/**/*.ts", "api/**/*.ts", "api/**/*.d.ts", "tests/**/*.ts"],
   "exclude": ["node_modules", "dist", "api/_bundle.mjs"]
 }
